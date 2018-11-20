@@ -5,15 +5,13 @@
 from sgfmill import sgf
 from sgfmill import sgf_moves
 import pandas as pd
-import numpy as np
 from plotnine import *
 import sys
 import click
 
-def read_board(sgf_filename, move_number):
-    f = open(sgf_filename, "rb")
-    sgf_src = f.read()
-    f.close()
+def read_board(sgf_file, move_number):
+    sgf_src = sgf_file.read()
+    sgf_file.close()
     try:
         sgf_game = sgf.Sgf_game.from_bytes(sgf_src)
     except ValueError:
@@ -108,14 +106,14 @@ def game_board_ggplot(board, board_size):
     return game
 
 @click.command()
-@click.argument('sgf_filename', nargs=1)
+@click.argument('sgf_file', nargs=1, type=click.File('rb'))
 @click.argument('move_number', nargs=1)
 @click.argument('pdf_filename', nargs=1)
-def board_to_pdf(sgf_filename, move_number, pdf_filename):
+def board_to_pdf(sgf_file, move_number, pdf_filename):
     move_number = int(move_number)
-    board, board_size = read_board(sgf_filename, move_number)
+    board, board_size = read_board(sgf_file, move_number)
     p = game_board_ggplot(board, board_size)
-    p.save(filename=pdf_filename)
+    p.save(filename=pdf_filename, width = 6.4, height = 4.8, verbose = False)
 
 if __name__ == "__main__":
     sys.exit(board_to_pdf())  # pragma: no cover
