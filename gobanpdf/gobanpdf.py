@@ -6,12 +6,13 @@ from sgfmill import sgf
 from sgfmill import sgf_moves
 import pandas as pd
 from plotnine import *
+import numpy as np
 import string
 import sys
 import click
 
 
-def read_board(sgf_file, move_number):
+def extract_board_table(sgf_file, move_number):
     sgf_src = sgf_file.read()
     sgf_file.close()
     try:
@@ -20,6 +21,12 @@ def read_board(sgf_file, move_number):
         raise Exception("bad sgf file")
 
     board_size = sgf_game.get_size()
+
+    # extract annotations/markings eg. A, B, square
+    try:
+        node = sgf_game.get_main_sequence()[move_number - 1]
+    except ValueError as e:
+        raise Exception(str(e))
 
     try:
         board, plays = sgf_moves.get_setup_and_moves(sgf_game)
@@ -37,7 +44,39 @@ def read_board(sgf_file, move_number):
             board.play(row, col, colour)
         except ValueError:
             raise Exception("illegal move in sgf file")
-    return board, board_size
+
+    board_list = [[col + 1, row + 1, board.get(row, col)] for col in range(board_size) for row in range(board_size)]
+    board_table = pd.DataFrame(board_list, columns=['x', 'y', 'stone'])
+
+    # properties_with_a_value = ['LB']
+    p = 'LB'
+    text_list = list()
+    if p in node.properties():
+        text_list = [[i[0][1] + 1, i[0][0] + 1, 'text', i[1]] for i in node.get(p)]
+    text_table = pd.DataFrame(text_list, columns=['x', 'y', 'annotation_type', 'value'])
+
+    properties_without_a_value = ['SQ', 'MA']
+    symbol_list = list()
+    for p in properties_without_a_value:
+        if p in node.properties():
+            for i in node.get(p):
+                row = i[0]
+                col = i[1]
+                symbol_list = symbol_list + [[col + 1, row + 1, 'symbol', p]]
+    symbol_table = pd.DataFrame(symbol_list, columns=['x', 'y', 'annotation_type', 'value'])
+    symbol_table
+
+    # combine stones and annotations into a single table
+    annotation_table = pd.concat([text_table, symbol_table])
+    board_table = board_table.merge(annotation_table, on=['x', 'y'], how='outer')
+
+    # set the color of the annotations
+    board_table['annotation_color'] = np.where(
+        (board_table['stone'].isnull()) | (board_table['stone'] == 'w'),
+        'b',
+        'w')
+
+    return board_table, board_size
 
 
 # n = 4
@@ -121,19 +160,23 @@ def goban(board_size=19):
     return goban
 
 
-def game_board_ggplot(board, board_size):
-    stones = pd.DataFrame(
-        [[row + 1, col + 1, board.get(row, col)] for col in range(board_size) for row in range(board_size)],
-        columns=['x', 'y', 'color'])
-    stones = stones.query("color == 'b' | color == 'w'")
+def game_board_ggplot(board_table, board_size):
 
     game = (goban(board_size) +
-            geom_point(aes('x', 'y', fill='color'), data=stones, size=8.9) +
+            geom_point(aes('x', 'y', fill='stone'), data=board_table[~board_table['stone'].isnull()], size=8.9) +
+            scale_color_manual(values={'b': 'black', 'w': 'white'}) +
             scale_fill_manual(values={'b': 'black', 'w': 'white'}) +
-            # geom_text(aes('x', 'y', label='label'), data=text_annotations, color='white', size=15, nudge_y=-0.05) +
+            scale_shape_manual(values={'SQ': 's', 'MA': 'x'}) +
+            geom_text(aes('x', 'y', color='annotation_color', label='value'),
+                      data=board_table[(~board_table.value.isnull()) & (board_table.annotation_type == 'text')],
+                      size=15, nudge_y=-0.05) +
+            geom_point(aes('x', 'y', fill='annotation_color', color='annotation_color', shape='value'),
+                       data=board_table[(~board_table.value.isnull()) & (board_table.annotation_type == 'symbol')],
+                       size=4) +
             coord_fixed() +
             theme_void() +
             theme(
+                # text=element_text(family='MingLiU'),
                 text=element_text(family='Arial'),
                 panel_grid_minor=element_blank(),
                 panel_grid_major=element_blank(),
@@ -161,8 +204,8 @@ def board_to_pdf(sgf_file, move_number, pdf_filename):
 
     """
     move_number = int(move_number)
-    board, board_size = read_board(sgf_file, move_number)
-    p = game_board_ggplot(board, board_size)
+    board_table, board_size = extract_board_table(sgf_file, move_number)
+    p = game_board_ggplot(board_table, board_size)
     p.save(filename=pdf_filename, width=6.4, height=4.8, verbose=False)
     return 0
 

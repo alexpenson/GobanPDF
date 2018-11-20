@@ -11,7 +11,7 @@ from setuptools import setup, find_packages
 # with open('HISTORY.rst') as history_file:
 #     history = history_file.read()
 
-requirements = ['Click>=6.0', 'sgfmill', 'pandas', 'plotnine']
+requirements = ['Click>=6.0', 'sgfmill', 'pandas', 'plotnine', 'numpy']
 
 setup_requirements = [ ]
 
