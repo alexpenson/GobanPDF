@@ -7,14 +7,11 @@ from sgfmill import sgf_moves
 import pandas as pd
 import numpy as np
 from plotnine import *
-
+import sys
+import click
 
 def read_board(sgf_filename, move_number):
-    pathname = '/Users/pensona/GoogleDrive/Personal/Go/corner_capture.sgf'
-
-    move_number = 4
-
-    f = open(pathname, "rb")
+    f = open(sgf_filename, "rb")
     sgf_src = f.read()
     f.close()
     try:
@@ -41,7 +38,7 @@ def read_board(sgf_filename, move_number):
             board.play(row, col, colour)
         except ValueError:
             raise Exception("illegal move in sgf file")
-    return board
+    return board, board_size
 
 
 
@@ -87,7 +84,7 @@ def goban(board_size=19):
             geom_point(aes('x0', 'y0'), data=hoshi, size=1.5))
 
 
-def game_board_ggplot(board):
+def game_board_ggplot(board, board_size):
     stones = pd.DataFrame([[row + 1, col + 1, board.get(row, col)] for col in range(board_size) for row in range(board_size)],
                           columns=['x', 'y', 'color'])
     stones = stones.query("color == 'b' | color == 'w'")
@@ -115,8 +112,12 @@ def game_board_ggplot(board):
 @click.argument('move_number', nargs=1)
 @click.argument('pdf_filename', nargs=1)
 def board_to_pdf(sgf_filename, move_number, pdf_filename):
-    board = read_board(sgf_filename, move_number)
-    p = game_board_ggplot(board)
+    move_number = int(move_number)
+    board, board_size = read_board(sgf_filename, move_number)
+    p = game_board_ggplot(board, board_size)
     p.save(filename=pdf_filename)
+
+if __name__ == "__main__":
+    sys.exit(board_to_pdf())  # pragma: no cover
 
 

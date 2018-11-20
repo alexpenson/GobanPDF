@@ -36,7 +36,7 @@ setup(
     description="Python Boilerplate contains all the boilerplate you need to create a Python package.",
     entry_points={
         'console_scripts': [
-            'gobanpdf=gobanpdf.cli:main',
+            'gobanpdf=gobanpdf.gobanpdf:board_to_pdf',
         ],
     },
     install_requires=requirements,
