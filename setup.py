@@ -13,7 +13,7 @@ from setuptools import setup, find_packages
 
 requirements = ['Click>=6.0', 'sgfmill', 'pandas', 'plotnine', 'numpy']
 
-setup_requirements = [ ]
+setup_requirements = ['numpy']
 
 test_requirements = [ ]
 
