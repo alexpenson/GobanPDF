@@ -12,7 +12,7 @@ To install GobanPDF, run this command in your terminal:
 
 .. code-block:: console
 
-    $ pip install gobanpdf
+    $ pip install git+git://github.com/alexpenson/GobanPDF.git
 
 This is the preferred method to install GobanPDF, as it will always install the most recent stable release.
 
