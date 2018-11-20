@@ -40,6 +40,6 @@ class TestGobanpdf(unittest.TestCase):
         with runner.isolated_filesystem():
             with open('example.sgf', 'w') as f:
                 f.write(sgf_example)
-            result = runner.invoke(gobanpdf.board_to_pdf, ['example.sgf', '4', 'example.pdf')
+            result = runner.invoke(gobanpdf.board_to_pdf, ['example.sgf', '4', 'example.pdf'])
             assert result.exit_code == 0
             assert 'gobanpdf.gobanpdf.board_to_pdf' in result.output
