@@ -74,18 +74,51 @@ def goban(board_size=19):
     letters.remove('I')
     letter_labels = letters[0:board_size]
 
-    return (ggplot() +
-            geom_rect(aes(xmin='xmin', xmax='xmax', ymin='ymin', ymax='ymax'),
-                      data=pd.DataFrame({'xmin': [1], 'xmax': [board_size],
-                                         'ymin': [1], 'ymax': [board_size]}),
-                      color='black', fill='none') +
-            geom_segment(aes(x='x', xend='xend', y='y', yend='yend'),
-                         data=grid_lines,
-                         color='black') +
-            geom_point(aes('x0', 'y0'), data=hoshi, size=1.5) +
-            scale_x_continuous(labels = letter_labels, breaks=list(range(1, board_size + 1))) +
-            scale_y_continuous(breaks=list(range(1, board_size + 1)))
-            )
+    kanji_labels = [u"\u4e00",
+                    u"\u4e8c",
+                    u"\u4e09",
+                    u"\u56db",
+                    u"\u4e94",
+                    u"\u516d",
+                    u"\u4e03",
+                    u"\u516b",
+                    u"\u4e5d",
+                    u"\u5341",
+                    u"\u5341\u4e00",
+                    u"\u5341\u4e8c",
+                    u"\u5341\u4e09",
+                    u"\u5341\u56db",
+                    u"\u5341\u4e94",
+                    u"\u5341\u516d",
+                    u"\u5341\u4e03",
+                    u"\u5341\u516b",
+                    u"\u5341\u4e5d"
+                    ]
+    kanji_labels.reverse()
+
+    goban = (ggplot() +
+             geom_rect(aes(xmin='xmin', xmax='xmax', ymin='ymin', ymax='ymax'),
+                       data=pd.DataFrame({'xmin': [1], 'xmax': [board_size],
+                                          'ymin': [1], 'ymax': [board_size]}),
+                       color='black', fill='none') +
+             geom_segment(aes(x='x', xend='xend', y='y', yend='yend'),
+                          data=grid_lines,
+                          color='black') +
+             geom_point(aes('x0', 'y0'), data=hoshi, size=1.5)
+             )
+    use_letter_labels = True
+    if use_letter_labels:
+        goban = (goban +
+                 scale_x_continuous(labels=letter_labels, breaks=list(range(1, board_size + 1))) +
+                 scale_y_continuous(breaks=list(range(1, board_size + 1)))
+                 )
+    else:
+        goban = (goban +
+                 scale_x_continuous(breaks=list(range(1, board_size + 1))) +
+                 scale_y_continuous(labels=kanji_labels, breaks=list(range(1, board_size + 1)))
+                 )
+
+    return goban
 
 
 def game_board_ggplot(board, board_size):
@@ -124,7 +157,7 @@ def board_to_pdf(sgf_file, move_number, pdf_filename):
 
     ⚫️⚪⚫️⚪
 
-    GobanPDF️
+    GobanPDF
 
     """
     move_number = int(move_number)
