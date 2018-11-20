@@ -9,38 +9,39 @@ import numpy as np
 from plotnine import *
 
 
-pathname = '/Users/pensona/GoogleDrive/Personal/Go/corner_capture.sgf'
+def read_board(sgf_filename, move_number):
+    pathname = '/Users/pensona/GoogleDrive/Personal/Go/corner_capture.sgf'
 
-move_number = 4
+    move_number = 4
 
-f = open(pathname, "rb")
-sgf_src = f.read()
-f.close()
-try:
-    sgf_game = sgf.Sgf_game.from_bytes(sgf_src)
-except ValueError:
-    raise Exception("bad sgf file")
-
-board_size = sgf_game.get_size()
-
-try:
-    board, plays = sgf_moves.get_setup_and_moves(sgf_game)
-except ValueError as e:
-    raise Exception(str(e))
-if move_number is not None:
-    move_number = max(0, move_number-1)
-    plays = plays[:move_number]
-
-
-for colour, move in plays:
-    if move is None:
-        continue
-    row, col = move
+    f = open(pathname, "rb")
+    sgf_src = f.read()
+    f.close()
     try:
-        board.play(row, col, colour)
+        sgf_game = sgf.Sgf_game.from_bytes(sgf_src)
     except ValueError:
-        raise Exception("illegal move in sgf file")
+        raise Exception("bad sgf file")
 
+    board_size = sgf_game.get_size()
+
+    try:
+        board, plays = sgf_moves.get_setup_and_moves(sgf_game)
+    except ValueError as e:
+        raise Exception(str(e))
+    if move_number is not None:
+        move_number = max(0, move_number-1)
+        plays = plays[:move_number]
+
+
+    for colour, move in plays:
+        if move is None:
+            continue
+        row, col = move
+        try:
+            board.play(row, col, colour)
+        except ValueError:
+            raise Exception("illegal move in sgf file")
+    return board
 
 
 
@@ -86,7 +87,7 @@ def goban(board_size=19):
             geom_point(aes('x0', 'y0'), data=hoshi, size=1.5))
 
 
-def plot_game_board(board):
+def game_board_ggplot(board):
     stones = pd.DataFrame([[row + 1, col + 1, board.get(row, col)] for col in range(board_size) for row in range(board_size)],
                           columns=['x', 'y', 'color'])
     stones = stones.query("color == 'b' | color == 'w'")
@@ -109,6 +110,13 @@ def plot_game_board(board):
     )
     return game
 
+@click.command()
+@click.argument('sgf_filename', nargs=1)
+@click.argument('move_number', nargs=1)
+@click.argument('pdf_filename', nargs=1)
+def board_to_pdf(sgf_filename, move_number, pdf_filename):
+    board = read_board(sgf_filename, move_number)
+    p = game_board_ggplot(board)
+    p.save(filename=pdf_filename)
 
-p = plot_game_board(board)
-p.save(filename="/Users/pensona/goban.pdf")
+
