@@ -114,6 +114,7 @@ def board_to_pdf(sgf_file, move_number, pdf_filename):
     board, board_size = read_board(sgf_file, move_number)
     p = game_board_ggplot(board, board_size)
     p.save(filename=pdf_filename, width = 6.4, height = 4.8, verbose = False)
+    return 0
 
 if __name__ == "__main__":
     sys.exit(board_to_pdf())  # pragma: no cover
