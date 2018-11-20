@@ -28,6 +28,6 @@ class TestGobanpdf(unittest.TestCase):
         result = runner.invoke(gobanpdf.board_to_pdf)
         assert result.exit_code == 0
         assert 'gobanpdf.cli.main' in result.output
-        help_result = runner.invoke(gobanpdf:board_to_pdf, ['--help'])
+        help_result = runner.invoke(gobanpdf.board_to_pdf, ['--help'])
         assert help_result.exit_code == 0
         assert '--help  Show this message and exit.' in help_result.output
