@@ -6,6 +6,7 @@
 
 import unittest
 from click.testing import CliRunner
+import os
 
 from gobanpdf import gobanpdf
 
@@ -42,4 +43,4 @@ class TestGobanpdf(unittest.TestCase):
                 f.write(sgf_example)
             result = runner.invoke(gobanpdf.board_to_pdf, ['example.sgf', '4', 'example.pdf'])
             assert result.exit_code == 0
-            assert 'gobanpdf.gobanpdf.board_to_pdf' in result.output
+            assert os.path.isfile('./example.pdf')
