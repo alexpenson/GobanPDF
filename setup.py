@@ -11,9 +11,9 @@ from setuptools import setup, find_packages
 # with open('HISTORY.rst') as history_file:
 #     history = history_file.read()
 
-requirements = ['Click>=6.0', 'sgfmill', 'pandas', 'plotnine', 'numpy']
+requirements = ['Click>=6.0', 'sgfmill', 'pandas', 'plotnine']
 
-setup_requirements = ['numpy']
+setup_requirements = [ ]
 
 test_requirements = [ ]
 
@@ -26,7 +26,6 @@ setup(
         'License :: OSI Approved :: MIT License',
         'Natural Language :: English',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
     ],
