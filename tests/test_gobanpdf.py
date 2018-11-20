@@ -43,4 +43,11 @@ class TestGobanpdf(unittest.TestCase):
                 f.write(sgf_example)
             result = runner.invoke(gobanpdf.board_to_pdf, ['example.sgf', '4', 'example.pdf'])
             assert result.exit_code == 0
+
+            # Test that the output file exists
             assert os.path.isfile('./example.pdf')
+
+            # ... and test that it's a pdf
+            with open('./example.pdf', 'rb') as f: line = f.readline()
+            assert '%PDF' in line.decode("utf-8")
+
